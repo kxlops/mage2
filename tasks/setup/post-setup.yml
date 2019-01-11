@@ -1,0 +1,11 @@
+---
+# add flag to workspace.yml indicating setup completed
+
+- name: Post setup update workspace config file
+  lineinfile:
+    path: '{{ kxlops_workspace_config_yml }}'
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    insertbefore: EOF
+    state: present
+  with_items: "{{ kxlops_mage2_post_update_config_yml }}"

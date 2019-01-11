@@ -1,0 +1,14 @@
+---
+- name: "Remove the folder : {{ kxlops_mage2_build_server_base_path }}/{{ ansistrano_version_dir }}/{{ ansistrano_release_version }}/pub/media"
+  file:
+    path: '{{ kxlops_mage2_build_server_base_path }}/{{ ansistrano_version_dir }}/{{ ansistrano_release_version }}/pub/media'
+    state: absent
+  when: ( install_kxlops_efs )
+
+- name: "symlink {{ kxlops_efs_mount_point }}"
+  file:
+    path: '{{ kxlops_mage2_build_server_base_path }}/{{ ansistrano_version_dir }}/{{ ansistrano_release_version }}/pub/media'
+    src: "{{ kxlops_efs_mount_point }}"
+    state: link
+    force: yes
+  when: ( install_kxlops_efs )

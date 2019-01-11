@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  author: "github@chriskonkel.com"
+  description: Magetno 2 install
+  company: KXL
+  license: LGPL
+  min_ansible_version: 2.2
+  platforms:
+    - name: EL
+      versions:
+        - all
+    - name: GenericUNIX
+      versions:
+        - all
+    - name: Fedora
+      versions:
+        - all
+  galaxy_tags:
+    - ecommerce
+    - magento
+dependencies: []

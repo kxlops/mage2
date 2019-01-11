@@ -1,0 +1,26 @@
+---
+- name: Install bash completion
+  yum:
+    name: bash-completion
+    enablerepo: epel
+    state: present
+  become: yes
+
+- name: Install autocomplete for magento command line tools
+  get_url:
+    url: https://raw.githubusercontent.com/yvoronoy/magento2-bash-completion/master/magento2-bash-completion
+    dest: /etc/bash_completion.d/magento2-bash-completion
+  become: yes
+
+- name: Update ~/.bash_profile
+  blockinfile:
+    path: ~/.bash_profile
+    marker: "#-- {mark} {{ item.key }} ANSIBLE MANAGED BLOCK --#"
+    content: "{{ item.value }}"
+    insertafter: EOF
+    state: present
+  become: no
+  with_items:
+    - { key: 'cdmage2', value: 'cd {{ kxlops_mage2_build_target_install_path }}' }
+    - { key: 'magebin', value: 'export PATH=$PATH:{{ kxlops_mage2_build_target_install_path }}/bin' }
+

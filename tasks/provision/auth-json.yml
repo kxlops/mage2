@@ -1,0 +1,17 @@
+---
+- name: 'Create ~.composer in user directory... {{ kxlops_mage2_builder_home_path }}/.composer/'
+  file:
+    path: '{{ kxlops_mage2_builder_home_path }}/.composer/'
+    state: directory
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+#  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+#  become: yes
+
+- name: 'Copy auth.json to: {{ kxlops_mage2_builder_home_path }}/.composer/'
+  copy:
+    src: 'files/composer/auth.json'
+    dest: '{{ kxlops_mage2_builder_home_path }}/.composer/'
+#    owner: '{{ kxlops_mage2_user }}'
+#    group: '{{ kxlops_mage2_group }}'
+#  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'

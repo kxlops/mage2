@@ -1,0 +1,22 @@
+---
+# NFS sync is fastest , but ownership is an issue , this brings those values in to server in vagrant
+#- name: 'Get sync directory stat info {{ kxlops_mage2_vagrant_guest_sync_path }}'
+#  stat:
+#    path: '{{ kxlops_mage2_vagrant_guest_sync_path }}'
+#  register: vagrant_file
+#
+#- debug:
+#    var: vagrant_file
+#
+#- name: 'Updating values for workspace.yml with kxlops_mage2_target_user: {{ vagrant_file.stat.uid }} and kxlops_mage2_target_user: {{ vagrant_file.stat.gid }}'
+#  lineinfile:
+#    path: '{{ kxlops_workspace_config_yml }}'
+#    regexp: '{{ item.regexp }}'
+#    line: '{{ item.line }}'
+#    insertbefore: BOF
+#    state: present
+#  with_items:
+#    - { regexp: '^kxlops_mage2_target_user', line: 'kxlops_mage2_target_user: {{ vagrant_file.stat.uid }}' }
+#    - { regexp: '^kxlops_mage2_target_group', line: 'kxlops_mage2_target_group: {{ vagrant_file.stat.gid }}' }
+#    - { regexp: '^kxlops_mage2_target_server_group', line: 'kxlops_mage2_target_server_group: {{ vagrant_file.stat.gid }}' }
+

@@ -1,0 +1,28 @@
+---
+- name: "start httpd"
+  service: name=httpd state=started
+  register: post_details
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  become: yes
+
+- name: "maintenance:disable"
+  shell: '{{ kxlops_mage2_build_target_install_path }}/bin/magento maintenance:disable'
+  register: bin_magento_details_disable
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+
+- debug: msg="{{ bin_magento_details_disable.stdout_lines }}"
+
+- name: Temporary solution to fix stock for bundles. Remove MySQL triggers for stock updates.
+  command: >
+    mysql --user={{ kxlops_mage2_env_db_user_main }} --password={{ vaulted_kxlops_mage2_env_db_password_main }} {{ kxlops_mage2_env_db_main }}
+    --host={{ kxlops_mage2_env_db_host_main }} --batch --skip-column-names
+    --execute="DROP TRIGGER IF EXISTS trg_cataloginventory_stock_item_after_insert;DROP TRIGGER IF EXISTS trg_cataloginventory_stock_item_after_update;DROP TRIGGER IF EXISTS trg_cataloginventory_stock_item_after_delete;"
+  register: removedtriggers
+  always_run: true
+  changed_when: false
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  when: kxlops_mage2_remove_stock_triggers
+
+- name: Results of trigger removal
+  debug: "{{ item }}"
+  with_items: removedtriggers.stdout_lines

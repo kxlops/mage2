@@ -1,0 +1,92 @@
+---
+- import_tasks: 'mage2-release-{{ kxlops_mage2_build_release_archive_location }}.yml'
+
+#- name: "Remove build files: {{ kxlops_mage2_build_target_base_path }}"
+#  file:
+#    path: '{{ kxlops_mage2_build_target_base_path }}'
+#    state: absent
+#  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+#  when: ( kxlops_mage2_build_remove_build )
+
+- name: "Remove build files: {{ kxlops_mage2_build_target_base_path }}"
+  shell: 'rm -Rf {{ kxlops_mage2_build_target_base_path }}'
+  become: yes
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  when: ( kxlops_mage2_build_remove_build )
+
+- name: 'Create build base path... {{ kxlops_mage2_build_target_base_path }}'
+  file:
+    path: '{{ kxlops_mage2_build_target_base_path }}'
+    state: directory
+    owner: '{{ kxlops_mage2_target_user }}'
+    group: '{{ kxlops_mage2_target_group }}'
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  become: yes
+
+- name: 'Create build install path... {{ kxlops_mage2_build_target_install_path }}'
+  file:
+    path: '{{ kxlops_mage2_build_target_install_path }}'
+    state: directory
+    owner: '{{ kxlops_mage2_target_user }}'
+    group: '{{ kxlops_mage2_target_group }}'
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  become: yes
+
+- name: Updating apache permissions
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ kxlops_mage2_target_user }}"
+    group: "{{ kxlops_mage2_target_group }}"
+    mode: "{{ item.mode }}"
+    recurse: "{{ item.recurse }}"
+  with_items:
+    - { mode: "g+w", path: "{{ kxlops_mage2_build_target_base_path }}/../", recurse: "yes" }
+  become: yes
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  tags:
+    - permissions
+
+- name: 'Copy release to target: Delegate to: {{ kxlops_mage2_build_delegate_to }} ->  {{ kxlops_mage2_build_release_archive_file_path }} => {{ kxlops_mage2_build_target_base_path }} permissions: {{ kxlops_mage2_target_user }}:{{ kxlops_mage2_target_group }}'
+  copy:
+    src: '{{ kxlops_mage2_build_release_archive_file_path }}'
+    dest: '{{ kxlops_mage2_build_target_base_path }}/'
+    owner: '{{ kxlops_mage2_target_user }}'
+    group: '{{ kxlops_mage2_target_group }}'
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+
+- name: 'Unarchive release: unzip -o {{ kxlops_mage2_build_release_archive_file_path }} -d {{ kxlops_mage2_build_local_final_path }}'
+  command: 'unzip -o {{ kxlops_mage2_build_target_base_path }}/{{ kxlops_mage2_build_release_archive }} -d {{ kxlops_mage2_build_target_install_path }}'
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  when: ( kxlops_mage2_build_unarchive_release )
+
+- name: 'Create document root directory... {{ kxlops_mage2_documentroot }}'
+  file:
+    path: '{{ kxlops_mage2_documentroot }}'
+    state: directory
+    owner: '{{ kxlops_mage2_target_user }}'
+    group: '{{ kxlops_mage2_target_group }}'
+  become: yes
+  when: ( kxlops_mage2_link_build_dir )
+
+- name: 'Sybolic link for local environment to build path {{ kxlops_mage2_link_server_from_path }}'
+  file:
+    src: '{{ kxlops_mage2_link_server_from_path }}'
+    dest: '{{ kxlops_mage2_documentroot }}/{{ kxlops_mage2_app_root }}'
+    owner: '{{ kxlops_mage2_target_user }}'
+    group: '{{ kxlops_mage2_target_group }}'
+    state: link
+#    force: yes
+  become: yes
+  when: ( kxlops_mage2_link_build_dir )
+
+- name: 'Vagrant ONLY: Disable removing of build files, prevent unarchiving of releases and patches - saved in workspace.yml'
+  lineinfile:
+    path: '{{ kxlops_workspace_config_yml }}'
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    insertbefore: BOF
+    state: present
+  when: ( ansible_user_id == 'vagrant' or is_vagrant )
+  with_items:
+    - { regexp: '^kxlops_mage2_build_remove_build', line: 'kxlops_mage2_build_remove_build: false' }
+    - { regexp: '^kxlops_mage2_build_unarchive_release', line: 'kxlops_mage2_build_unarchive_release: false' }

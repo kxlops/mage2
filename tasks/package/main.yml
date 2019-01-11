@@ -1,0 +1,30 @@
+---
+
+- debug: msg="play_hosts={{ play_hosts }}"
+- debug: msg="kxlops_mage2_build_target_base_path={{ kxlops_mage2_build_target_base_path }}"
+- debug: msg="kxlops_mage2_build_artifact_file_path={{ kxlops_mage2_build_artifact_file_path }}"
+- debug: msg="kxlops_mage2_build_artifact_exclude_files={{ kxlops_mage2_build_artifact_exclude_files }}"
+
+#    kxlops_mage2_build_server_install_path
+#
+- name: Creating archive
+  archive:
+    path: '{{ kxlops_mage2_build_include_files }}'
+    dest: '{{ kxlops_mage2_build_artifact_file_path }}'
+    exclude_path: '{{ kxlops_mage2_build_artifact_exclude_files }}'
+    format: zip
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+#
+#- name: Saving current build to file
+#  copy:
+#    content: '{{ kxlops_mage2_build_artifact_full_path }}'
+#    dest: '{{ kxlops_mage2_build_artifact_base_path }}/{{ kxlops_mage2_build_artifact_last_build_file }}'
+#
+#
+#
+#
+#    kxlops_mage2_build_dir: 'mage2_{{ kxlops_workspace_env }}'
+#    kxlops_mage2_build_artifact_file: 'mage2_{{ kxlops_workspace_env }}.zip'
+#    kxlops_mage2_build_artifact_location: local # or S3
+#    kxlops_mage2_build_artifact_base_path: '{{ kxlops_workspace_base_path }}/_artifacts'
+#    kxlops_mage2_build_artifact_file_path: '{{ kxlops_mage2_build_artifact_base_path }}/{{ kxlops_mage2_build_artifact_file }}'

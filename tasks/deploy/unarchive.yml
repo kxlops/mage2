@@ -1,0 +1,15 @@
+---
+- name: "Unzip release - unzip {{ kxlops_mage2_build_server_base_path }}/{{ ansistrano_version_dir }}/{{ ansistrano_release_version }}/{{ kxlops_mage2_build_artifact_file }}"
+  shell: 'unzip -d {{ kxlops_mage2_build_server_base_path }}/{{ ansistrano_version_dir }}/{{ ansistrano_release_version }} {{ kxlops_mage2_build_server_base_path }}/{{ ansistrano_version_dir }}/{{ ansistrano_release_version }}/{{ kxlops_mage2_build_artifact_file }}'
+
+# Too f'n slow
+#- name: Unzip release
+#  unarchive:
+#    src: "{{ kxlops_mage2_build_server_base_path }}/{{ ansistrano_version_dir }}/{{ ansistrano_release_version }}/{{ kxlops_mage2_build_artifact_file }}"
+#    dest: "{{ kxlops_mage2_build_server_base_path }}/{{ ansistrano_version_dir }}/{{ ansistrano_release_version }}"
+#    remote_src: yes
+
+- name: Remove archive
+  file:
+    state: absent
+    path: "{{ kxlops_mage2_build_server_base_path }}/{{ ansistrano_version_dir }}/{{ ansistrano_release_version }}/{{ kxlops_mage2_build_artifact_file }}"

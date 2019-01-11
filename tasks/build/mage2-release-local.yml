@@ -1,0 +1,14 @@
+---
+- name: 'Does release archive exist? {{ kxlops_mage2_build_release_archive_file_path }}'
+  stat:
+    path: '{{ kxlops_mage2_build_release_archive_file_path }}'
+  register: stat_mage2_release
+  delegate_to: localhost
+
+- debug:
+    var: stat_mage2_release
+
+- fail:
+    msg: "Local copy does NOT exist: {{ kxlops_mage2_build_release_archive_file_path }} "
+  when:
+    - 'stat_mage2_release.stat.exists == false'

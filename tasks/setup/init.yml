@@ -1,0 +1,20 @@
+---
+- name: Make sure we have a ARTIFACTS path directory
+  file:
+    path: '{{ kxlops_workspace_base_path }}/{{ kxlops_workspace_artifacts_dir }}'
+    state: directory
+  register: artifact_path
+  when: kxlops_mage2_build_artifact_location == 'local'
+
+- debug:
+    var: artifact_path
+
+- name: Make sure we have a BUILDS path directory
+  file:
+    path: '{{ kxlops_workspace_base_path }}/{{ kxlops_workspace_builds_dir }}'
+    state: directory
+  register: build_path
+
+- debug:
+    var: build_path
+

@@ -1,0 +1,43 @@
+---
+- name: "Running bin/magento maintenance:disable"
+  shell: '{{ kxlops_mage2_build_server_base_path }}/{{ ansistrano_version_dir }}/{{ ansistrano_release_version }}/bin/magento maintenance:disable'
+  register: bin_magento_details_maintenance
+
+#- debug: msg="{{ bin_magento_details_maintenance }}"
+
+- name: "Running  bin/magento cache:flush"
+  shell: '{{ kxlops_mage2_build_server_base_path }}/{{ ansistrano_version_dir }}/{{ ansistrano_release_version }}/bin/magento cache:flush'
+  register: bin_magento_details_flush_cache
+  run_once: yes
+
+#- debug: msg="{{ bin_magento_details_flush_cache }}"
+
+- name: "Running  bin/magento cache:enable"
+  shell: '{{ kxlops_mage2_build_server_base_path }}/{{ ansistrano_version_dir }}/{{ ansistrano_release_version }}/bin/magento cache:flush'
+  register: bin_magento_details_flush_enable
+  run_once: yes
+
+#- debug: msg="{{ bin_magento_details_flush_enable }}"
+
+- name: "Running bin/magento cache:status"
+  shell: '{{ kxlops_mage2_build_server_base_path }}/{{ ansistrano_version_dir }}/{{ ansistrano_release_version }}/bin/magento cache:status'
+  register: bin_magento_details_cache_status
+  run_once: yes
+
+#- debug: msg="{{ bin_magento_details_cache_status }}"
+
+- name: Enable Cron on Rundeck
+  uri:
+    url: "{{ kxlops_mage2_rundeck_api_url }}/api/24/job/{{ kxlops_mage2_rundeck_cron_job }}/execution/enable"
+    method: POST
+    headers:
+      X-Rundeck-Auth-Token: "{{ kxlops_mage2_rundeck_api_token }}"
+  run_once: yes
+  when: kxlops_mage2_use_rundeck_cron
+
+- name: Start service httpd, if not running
+  service:
+    name: httpd
+    state: started
+  become: yes
+

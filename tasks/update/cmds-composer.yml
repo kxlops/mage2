@@ -1,0 +1,52 @@
+---
+#- name: Composer outdated
+#  composer:
+#    command: 'outdated'
+#    working_dir: '{{ kxlops_mage2_build_target_install_path }}'
+#  register: composer_outdated
+#  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+#  tags:
+#    - "composer-outdated"
+#
+#- debug: msg="['-------------------------- Balfour Modules to Update ---------------------------'] + {{ ( composer_outdated.stdout_lines | select('match', '^(balfour)') | list ) }} "
+#  tags:
+#    - "composer-outdated"
+#    - "summery"
+#
+#- debug: msg="['------------- Other Modules to Update inclduing Newer Mage2 Versions -------------'] + {{ ( composer_outdated.stdout_lines | select('match', '^(?!balfour|\b\b|Warning)') | list ) }}"
+#  tags:
+#    - "composer-outdated"
+#    - "full"
+
+- name: Composer updates
+  composer:
+    command: '{{ item }}'
+    arguments: -vvv
+    working_dir: '{{ kxlops_mage2_build_target_install_path }}'
+  with_items: '{{ kxlops_mage2_build_update_composer }}'
+  register: composer_update
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  tags:
+    - "composer-up"
+
+- set_fact:
+    composer_update_full: "{{ composer_update.results | map(attribute='stdout_lines') | list }}"
+  tags:
+    - "composer-up"
+
+- set_fact:
+    composer_update_summery: "{{ composer_update_full[0] | select('match', '^(?!Reading|Writing|Warning|Downloading|Importing|Executing|Skipped)') | list }}"
+  tags:
+    - "composer-up"
+
+- debug: msg="['----------------------- Summery of Composer Output ------------------------'] + {{ composer_update_summery }}"
+  tags:
+    - "composer-up"
+    - "summery"
+
+- debug: msg="['-------------------------- Full Composer Output ---------------------------'] + {{ composer_update_full }}"
+  tags:
+    - "composer-up"
+    - "full"
+
+

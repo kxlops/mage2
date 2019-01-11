@@ -1,0 +1,92 @@
+---
+# - name: "Create mage2 group '{{ kxlops_mage2_group }}'
+#   group:
+#     name: {{ kxlops_mage2_group }}
+#     state: present
+#   become: yes
+#
+# - name: "Create mage2 user '{{ kxlops_mage2_user }}'
+#   user:
+#     name: "{{ kxlops_mage2_user }}"
+#     group: "{{ kxlops_mage2_group }}"
+#   when: kxlops_workspace_env != 'vagrant'
+#   become: yes
+
+- name: "Add '{{ kxlops_mage2_target_user }}' user to server '{{ kxlops_mage2_target_server_group }}' group"
+  user:
+    name: "{{ kxlops_mage2_target_user }}"
+    group: "{{ kxlops_mage2_target_server_group }}"
+  become: yes
+  register: user_group
+#  when: kxlops_workspace_env != "vagrant"
+
+- debug:
+    var: user_group
+#  when: kxlops_workspace_env != "vagrant"
+
+- name: Update Apache user/group in http.conf - has logic for vagrant as well
+  lineinfile:
+    path: '{{ kxlops_mage2_http_conf }}'
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+#    - { regexp: "^User", line: "User {{ kxlops_mage2_httpd_user }}" }
+#    - { regexp: "^Group", line: "Group {{ kxlops_mage2_httpd_group }}" }
+    - { regexp: "^User", line: "User {{ ( kxlops_mage2_target_user | int ) | ternary( 'vagrant', kxlops_mage2_target_user ) }}" }
+    - { regexp: "^Group", line: "Group {{ ( kxlops_mage2_target_group | int ) | ternary( 'vagrant', kxlops_mage2_target_server_group ) }}" }
+
+# prefork MPM
+# StartServers: number of server processes to start
+# MinSpareServers: minimum number of server processes which are kept spare
+# MaxSpareServers: maximum number of server processes which are kept spare
+# MaxRequestWorkers: maximum number of server processes allowed to start
+# MaxConnectionsPerChild: maximum number of requests a server process serves
+
+#<IfModule mpm_prefork_module>
+#  StartServers              {{ ansible_processor_vcpus * 2 }};
+#  MinSpareServers           {{ ansible_processor_vcpus * 2 }};
+#  MaxSpareServers           {{ ansible_processor_vcpus * 4 }};
+#{% if ansible_distribution == "Ubuntu" %}
+#  MaxRequestWorkers         {{ ansible_processor_vcpus * 150 }};
+#  MaxConnectionsPerChild    0
+#{% endif %}
+#</IfModule>
+
+- name: "Update MPM for apache : {{ kxlops_mage2_http_conf }}"
+  blockinfile:
+    path: "{{ kxlops_mage2_http_conf }}"
+    marker: "#-- {mark} ANSIBLE MANAGED BLOCK prefork MPM --#"
+    content: |
+      # StartServers: number of server processes to start
+      # MinSpareServers: minimum number of server processes which are kept spare
+      # MaxSpareServers: maximum number of server processes which are kept spare
+      # ServerLimit: maximum value for MaxClients for the lifetime of the server
+      # MaxClients: maximum number of server processes allowed to start
+      # MaxRequestsPerChild: maximum number of requests a server process serves
+      <IfModule mpm_worker_module>
+          ServerLimit             {{ kxlops_mage2_httpd_mpm_serverlimit }}
+          StartServers            {{ kxlops_mage2_httpd_mpm_startservers }}
+          MinSpareThreads         {{ kxlops_mage2_httpd_mpm_minsparethreads }}
+          MaxSpareThreads         {{ kxlops_mage2_httpd_mpm_maxsparethreads }}
+          ThreadLimit             {{ kxlops_mage2_httpd_mpm_threadlimit }}
+          ThreadsPerChild         {{ kxlops_mage2_httpd_mpm_threadsperchild }}
+          MaxRequestWorkers       {{ kxlops_mage2_httpd_mpm_maxrequestworkers }}
+          MaxConnectionsPerChild  {{ kxlops_mage2_httpd_mpm_maxconnectionsperchild }}
+      </IfModule>
+    insertafter: '^Include conf.modules.d'
+    state: present
+    backup: yes
+  become: yes
+
+- name: Create path to httpd document root
+  file:
+    path: "{{ kxlops_mage2_documentroot }}"
+    owner: "{{ kxlops_mage2_target_user }}"
+    group: "{{ kxlops_mage2_target_server_group }}"
+    mode: 0755
+    state: directory
+  when: ( is_vagrant == false )
+
+- name: Force httpd restart
+  service: name=httpd state=restarted

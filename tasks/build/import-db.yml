@@ -1,0 +1,16 @@
+---
+# @TODO - incomplete / not working
+- name: Copy databases
+  copy:
+    src: {{ item.name }}.sql.gz
+    dest: /tmp
+  with_items:
+  - '{{mysql_databases}}'
+
+- name: Import Databases
+  mysql_db:
+    name: "{{ item.name }}"
+    state: import
+    target: {{ item.name }}
+  with_items:
+    - '{{mysql_databases}}'

@@ -1,0 +1,26 @@
+---
+- debug:
+    msg: "is_vagrant = {{ is_vagrant }}"
+  tags:
+    - always
+
+- import_tasks: vagrant.yml
+  when: ( is_vagrant )
+  tags:
+    - vagrant
+
+- name: "Delegate to {{ ansible_host }} if 'target=remote' is passed"
+  set_fact:
+    kxlops_mage2_build_delegate_to: "{{ ansible_host }}"
+  when: ( target is defined and target == 'remote' )
+  tags:
+    - always
+
+- name: "Current kxlops_mage2_build_target_local: {{ kxlops_mage2_build_target_local }} set false if 'target=remote' is passed (this can be overridden as extra vars -e 'kxlops_mage2_build_target_local=true')"
+  set_fact:
+    kxlops_mage2_build_target_local: false
+  when: ( target is defined and target == 'remote' )
+  tags:
+    - always
+
+- import_tasks: '{{ mage2_subtask }}/main.yml'

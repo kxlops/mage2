@@ -1,0 +1,49 @@
+---
+#find var vendor pub/static pub/media app/etc -type f -exec chmod g+w {} \;
+#find var vendor pub/static pub/media app/etc -type d -exec chmod g+ws {} \;
+#sudo chown -R :<web server group> .
+#chmod u+x bin/magento
+
+# @TODO improve so we can remove ignore_errors: yes
+
+- debug:
+    var: kxlops_mage2_target_user
+
+- debug:
+    var: kxlops_mage2_target_group
+
+- name: kxlops | mage2 | build - Updating mage2 permissions files
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ kxlops_mage2_target_user }}"
+    group: "{{ kxlops_mage2_target_group }}"
+    mode: "{{ item.mode }}"
+    recurse: "{{ item.recurse }}"
+  with_items:
+    - { mode: "g+w", path: "{{ kxlops_mage2_build_target_install_path }}/var", recurse: "yes" }
+    - { mode: "g+w", path: "{{ kxlops_mage2_build_target_install_path }}/vendor", recurse: "yes" }
+    - { mode: "g+w", path: "{{ kxlops_mage2_build_target_install_path }}/pub/static", recurse: "yes" }
+    - { mode: "g+w", path: "{{ kxlops_mage2_build_target_install_path }}/pub/media", recurse: "yes" }
+    - { mode: "g+w", path: "{{ kxlops_mage2_build_target_install_path }}/app/etc", recurse: "yes" }
+  become: yes
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  ignore_errors: yes
+
+- name: kxlops | mage2 | build - Updating mage2 permissions folders and executables
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ kxlops_mage2_target_user }}"
+    group: "{{ kxlops_mage2_target_group }}"
+    mode: "{{ item.mode }}"
+    state: "{{ item.state }}"
+    recurse: "{{ item.recurse }}"
+  with_items:
+    - { mode: "g+ws", path: "{{ kxlops_mage2_build_target_install_path }}/var", state: "directory", recurse: "yes" }
+    - { mode: "g+ws", path: "{{ kxlops_mage2_build_target_install_path }}/vendor", state: "directory", recurse: "yes" }
+    - { mode: "g+ws", path: "{{ kxlops_mage2_build_target_install_path }}/pub/static", state: "directory", recurse: "yes" }
+    - { mode: "g+ws", path: "{{ kxlops_mage2_build_target_install_path }}/pub/media", state: "directory", recurse: "yes" }
+    - { mode: "g+ws", path: "{{ kxlops_mage2_build_target_install_path }}/app/etc", state: "directory", recurse: "yes" }
+    - { mode: "u+x", path: "{{ kxlops_mage2_build_target_install_path }}/bin/magento", state: "file", recurse: "no" }
+  become: yes
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  ignore_errors: yes

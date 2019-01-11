@@ -1,0 +1,4 @@
+---
+- import_tasks: composer.yml
+  tags:
+    - composer

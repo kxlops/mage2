@@ -1,0 +1,33 @@
+---
+- name: Release Archive - exist?
+  stat:
+    path: '{{ kxlops_mage2_build_release_archive_file_path }}'
+  register: stat_mage2_release
+
+- debug:
+    var: stat_mage2_release
+
+- fail:
+    msg: "S3 not implemented yet!"
+
+# S3 Download logic goes here
+
+#- name: S3 -  Get temp crediatials to download Magetno 2 release
+#  sts_assume_role:
+#    role_arn: '{{ retail_mage2_s3_assume_role }}'
+#    role_session_name: tempMagento2AnsibleGet
+#    region: us-east-1
+#  register: mage2_assumed_role
+#  when: stat_mage2_release.stat.exists == false or missing_patches is defined
+#
+## @TODO ALL PEOPLE HAVE ACCESS to DEVOPS!!! PROB PRODUCTION TOO!! NEED TO FIX!!!
+#- name: S3 - GET magetno release
+#  aws_s3:
+#    bucket: magento2ee
+#    object: '{{ retail_mage2_s3_release_dir }}/{{ retail_mage2_release_archive }}'
+#    dest: '{{ retail_mage2_release_path }}/{{ retail_mage2_release_archive }}'
+#    aws_access_key: "{{ mage2_assumed_role.sts_creds.access_key }}"
+#    aws_secret_key: "{{ mage2_assumed_role.sts_creds.secret_key }}"
+#    security_token: "{{ mage2_assumed_role.sts_creds.session_token }}"
+#    mode: get
+#  when: stat_mage2_release.stat.exists == false

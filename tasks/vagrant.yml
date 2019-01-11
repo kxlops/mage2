@@ -1,0 +1,33 @@
+---
+# NFS sync is fastest , but ownership is an issue , this brings those values in to server in vagrant
+- name: 'is_vagrant: {{is_vagrant}} - Get sync directory stat info {{ kxlops_mage2_vagrant_guest_sync_path }}'
+  stat:
+    path: '{{ kxlops_mage2_vagrant_guest_sync_path }}'
+  register: vagrant_file
+
+#- debug:
+#    var: vagrant_file
+
+- name: "OVERRIDE Updating for kxlops_mage2_target_user {{ vagrant_file.stat.uid | default('') }} and kxlops_mage2_target_user {{ vagrant_file.stat.gid | default('') }} and kxlops_mage2_target_server_group {{ vagrant_file.stat.gid | default('') }}"
+  set_fact:
+    kxlops_mage2_target_user: "{{ vagrant_file.stat.uid }}"
+    kxlops_mage2_target_group: "{{ vagrant_file.stat.gid }}"
+    kxlops_mage2_target_server_group: "{{ vagrant_file.stat.gid }}"
+#  when: vagrant_file.stat.exists
+
+- name: Check if kxlops_mage2_unique_id exist in workspace.yml
+  lineinfile:
+    name: '{{ kxlops_workspace_config_yml }}'
+    regexp: "^kxlops_mage2_unique_id"
+    state: absent
+  check_mode: yes
+  register: unique_id
+
+#- debug: msg='{{ unique_id }}'
+
+- name: Add kxlops_mage2_unique_id to workspace.yml if not there
+  lineinfile:
+    path: '{{ kxlops_workspace_config_yml }}'
+    line: "kxlops_mage2_unique_id: {{ lookup('password', '/dev/null length=10 chars=ascii_letters') }}"
+    insertafter: EOF
+  when: not (unique_id | changed )

@@ -1,0 +1,7 @@
+---
+- name: "Stop apache"
+  service: name=httpd state=stopped
+  register: pre_details
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  become: yes
+

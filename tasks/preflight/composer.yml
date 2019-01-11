@@ -1,0 +1,48 @@
+---
+- name: Composer outdated
+  composer:
+    command: 'outdated'
+    working_dir: '{{ balops_mage2_build_target_install_path }}'
+  register: composer_outdated
+  delegate_to: '{{ balops_mage2_build_delegate_to }}'
+  tags:
+    - "composer-outdated"
+
+- debug: msg="['-------------------------- Balfour Modules to Update ---------------------------'] + {{ ( composer_outdated.stdout_lines | select('match', '^(balfour)') | list ) }} "
+  tags:
+    - "composer-outdated"
+    - "summery"
+
+#
+#
+#- name: Composer updates --dry-run
+#  composer:
+#    command: 'update'
+#    arguments: "-vvv --dry-run ihatecomposer"
+#    working_dir: '{{ balops_mage2_build_server_install_path }}'
+#  register: composer_update
+#  tags:
+#    - "composer-up"
+#
+##- debug:
+##    var: composer_update
+#
+#- set_fact:
+#    composer_update_full: "{{ composer_update.stdout_lines }}"
+#  tags:
+#    - "composer-up"
+#
+#- set_fact:
+#    composer_update_summery: "{{ composer_update_full | select('match', '^(?!Reading|Writing|Warning|Downloading|Importing|Executing|Skipped)') | list }}"
+#  tags:
+#    - "composer-up"
+#
+#- debug: msg="['----------------------- Summery of Composer Output ------------------------'] + {{ composer_update_summery }}"
+#  tags:
+#    - "composer-up"
+#    - "summery"
+#
+#- debug: msg="['-------------------------- Full Composer Output ---------------------------'] + {{ composer_update_full }}"
+#  tags:
+#    - "composer-up"
+#    - "full"

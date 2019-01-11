@@ -1,0 +1,18 @@
+---
+- import_tasks: cmds-pre.yml
+  when: ( target  == 'remote' )
+  tags:
+    - update-pre
+
+- import_tasks: cmds-composer.yml
+  tags:
+    - update-composer
+
+- import_tasks: cmds-magento.yml
+  tags:
+    - update-magento
+
+- import_tasks: cmds-post.yml
+#  when: ( target  == 'remote' )
+  tags:
+    - update-post

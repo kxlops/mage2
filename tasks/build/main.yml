@@ -1,0 +1,38 @@
+---
+- import_tasks: prepare.yml
+  tags:
+    - build-prepare
+    - always
+
+# notice using include here so it will be evaluated at runtime
+- include_tasks: mage2-release.yml
+  tags:
+    - mage2-release
+
+- name: Apply Offical Mage2 Patches
+  include_tasks: mage2-patch.yml
+  when: kxlops_mage2_build_core_patches_apply
+  tags:
+    - mage2-patch
+
+- import_tasks: env-php.yml
+  tags:
+    - build-env
+
+- import_tasks: config-php.yml
+  tags:
+    - build-config
+
+- import_tasks: composer-json.yml
+  tags:
+    - build-composer
+
+- import_tasks: link-media.yml
+  when: ( kxlops_mage2_build_link_media )
+  tags:
+    - link-media
+
+- import_tasks: install-permissions.yml
+  tags:
+    - install-permissions
+    - permissions

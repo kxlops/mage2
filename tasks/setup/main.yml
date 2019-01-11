@@ -1,0 +1,17 @@
+---
+- import_tasks: init.yml
+  tags:
+    - setup-init
+
+- import_tasks: install-keys.yml
+  tags:
+    - install-keys
+
+- import_tasks: post-setup.yml
+  tags:
+    - post-setup
+
+#- import_tasks: vagrant.yml
+#  tags:
+#    - setup-vagrant
+#  when: kxlops_workspace_vagrant

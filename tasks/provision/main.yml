@@ -1,0 +1,9 @@
+---
+- import_tasks: apache-mage2.yml
+  tags:
+    - apache-mage2
+
+# @TODO this should only be installed on deployment servers or development not qa, staging, prod ...
+- import_tasks: auth-json.yml
+  tags:
+    - auth-jason

@@ -1,0 +1,14 @@
+---
+# @TODO - rename kxlops_efs_mount_point to kxlops_media_mount_point or implement differently
+
+- name: "kxlops | mage2 | build - Remove the folder : {{ kxlops_mage2_build_target_install_path }}/pub/media"
+  file:
+    path: '{{ kxlops_mage2_build_target_install_path }}/pub/media'
+    state: absent
+
+- name: "kxlops | mage2 | build - Symlink {{ kxlops_mage2_build_target_install_path }}/pub/media TO {{ kxlops_efs_mount_point }}"
+  file:
+    path: '{{ kxlops_mage2_build_target_install_path }}/pub/media'
+    src: "{{ kxlops_efs_mount_point }}"
+    state: link
+    force: yes

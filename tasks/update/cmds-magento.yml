@@ -1,0 +1,77 @@
+---
+- name: "cli integrity check : bin/magento"
+  shell: '{{ kxlops_mage2_build_target_install_path }}/bin/magento'
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+
+- name: "maintenance:enable"
+  shell: '{{ kxlops_mage2_build_target_install_path }}/bin/magento maintenance:enable'
+  register: bin_magento_details_enable
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+
+- debug: msg="{{ bin_magento_details_enable.stdout_lines }}"
+
+- name: "app:config:import"
+  shell: '{{ kxlops_mage2_build_target_install_path }}/bin/magento app:config:import'
+  register: bin_magento_details_config_import
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  when: ( kxlops_mage2_cmd_app_config_import )
+
+- debug: msg="{{ bin_magento_details_config_import.stdout_lines }}"
+  when: ( kxlops_mage2_cmd_app_config_import )
+
+- name: "Make sure all modules are enabled kxlops_mage2_cmd_enable_all_modules -> {{ kxlops_mage2_cmd_enable_all_modules }}"
+  shell: '{{ kxlops_mage2_build_target_install_path }}/bin/magento module:enable --all'
+  register: bin_magento_details_enable_all_modules
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  when: ( kxlops_mage2_cmd_enable_all_modules )
+
+- debug: msg="{{ bin_magento_details_enable_all_modules.stdout_lines }}"
+  when: ( kxlops_mage2_cmd_enable_all_modules )
+
+- name: "setup:upgrade"
+  shell: '{{ kxlops_mage2_build_target_install_path }}/bin/magento setup:upgrade'
+  register: bin_magento_details_upgrade
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  when: ( kxlops_mage2_cmd_setup_upgrade )
+
+- debug: msg="{{ bin_magento_details_upgrade.stdout_lines }}"
+  when: ( kxlops_mage2_cmd_setup_upgrade )
+
+- name: "cache:status"
+  shell: '{{ kxlops_mage2_build_target_install_path }}/bin/magento cache:status'
+  register: bin_magento_details_cstatus
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+
+- debug: msg="{{ bin_magento_details_cstatus.stdout_lines }}"
+
+- name: "cache:enable"
+  shell: '{{ kxlops_mage2_build_target_install_path }}/bin/magento cache:enable'
+  register: bin_magento_details_cache
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+
+- debug: msg="{{ bin_magento_details_cache.stdout_lines }}"
+
+- name: "setup:di:compile"
+  shell: '{{ kxlops_mage2_build_target_install_path }}/bin/magento setup:di:compile'
+  register: bin_magento_details_compile
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  when: ( kxlops_mage2_env_mage_mode == 'production' )
+
+- debug: msg="{{ bin_magento_details_compile.stdout_lines }}"
+  when: ( kxlops_mage2_env_mage_mode == 'production' )
+
+- name: "static-deploy timeout {{ kxlops_mage2_cmd_setup_sc_deploy_timeout }} {{ kxlops_mage2_build_target_install_path }}/bin/magento setup:static-content:deploy and retry {{ kxlops_mage2_cmd_setup_sc_deploy_retries }} time(s)"
+  shell: 'timeout {{ kxlops_mage2_cmd_setup_sc_deploy_timeout }} {{ kxlops_mage2_build_target_install_path }}/bin/magento setup:static-content:deploy'
+  register: bin_magento_details_static
+  retries: "{{ kxlops_mage2_cmd_setup_sc_deploy_retries }}"
+  delay: "{{ kxlops_mage2_cmd_setup_sc_deploy_delay }}"
+  until: bin_magento_details_static.rc == 0
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  tags:
+    - staticd
+  when: ( kxlops_mage2_env_mage_mode == 'production' )
+
+- debug: msg="{{ bin_magento_details_static }}"
+  tags:
+    - staticd
+  when: ( kxlops_mage2_env_mage_mode == 'production' )

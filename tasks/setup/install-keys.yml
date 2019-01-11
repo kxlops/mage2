@@ -1,0 +1,7 @@
+---
+- name: Copy ssh keys for remote systems
+  copy:
+    src: "{{ item }}"
+    dest: "{{ kxlops_workspace_ssh_key_path }}"
+    mode: 0400
+  with_fileglob: '{{ kxlops_workspace_keys }}'

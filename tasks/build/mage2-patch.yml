@@ -1,0 +1,14 @@
+---
+- name: "kxlops | mage2 | build - Apply Mage2 core patches, basedir -> {{ kxlops_mage2_build_target_base_path }}/{{ kxlops_mage2_app_root }}"
+  patch:
+    src: '{{ kxlops_mage2_build_core_patches_base_path }}/{{ item.file }}'
+    basedir: '{{ item.base_path }}'
+    strip: '{{ item.strip }}'
+  with_items: '{{ kxlops_mage2_build_core_patches }}'
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+  register: mage2_core_patches
+  when: kxlops_mage2_build_core_patches|default(false) # core patches available?
+
+- debug:
+    var: mage2_core_patches
+  when: kxlops_mage2_build_core_patches|default(false) # core patches available?

@@ -1,0 +1,10 @@
+---
+# These tasks deal with settings that need to be on the server
+
+- name: "Check for single host - total hosts: {{ play_hosts|length }}"
+  fail: msg="Single host check failed. Can only deply to one host when building on localhost."
+  when: ( play_hosts|length != 1 and target != 'remote')
+
+
+
+

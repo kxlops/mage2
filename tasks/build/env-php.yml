@@ -1,0 +1,32 @@
+---
+- name: kxlops | mage2 | build -  env.php data with first found file locations
+  debug:
+    msg:
+      - '---------------------- Searching these locations ---------------------------------------'
+      - 'environment and role specific: {{ role_path }}/templates/env/{{ kxlops_workspace_env }}/{{ kxlops_workspace_role }}/app/etc/'
+      - 'environment specific and role independent: {{ role_path }}/templates/env/{{ kxlops_workspace_env }}/all/app/etc/'
+      - '{{ role_path }}/templates/env/default/all/app/etc/'
+
+- name: kxlops | mage2 | build - app/etc/env.php - BACKUP IS MADE
+  template:
+    src: '{{ item }}'
+    dest: '{{ kxlops_mage2_env_php_path }}'
+    backup: yes
+  with_first_found:
+    - files:
+      - '{{ kxlops_mage2_template_env_php }}'
+      paths:
+      # custom location source
+      #- '{{ kxlops_mage2_template_env_php_custom }}/'
+      # environment and role specific
+      - '{{ role_path }}/templates/env/{{ kxlops_workspace_env }}/{{ kxlops_workspace_role }}/app/etc/'
+      # environment specific and role independent
+      - '{{ role_path }}/templates/env/{{ kxlops_workspace_env }}/all/app/etc/'
+      # default
+      - 'templates/env/default/all/app/etc/'
+  register: env_found
+  delegate_to: '{{ kxlops_mage2_build_delegate_to }}'
+
+- debug:
+    var: env_found
+
